@@ -1,0 +1,11 @@
+{
+  "name": "game-2",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/run-tests.mjs"
+  },
+  "devDependencies": {
+    "luau-web": "1.5.1"
+  }
+}

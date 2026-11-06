@@ -1,0 +1,19 @@
+{
+  "name": "game-2",
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "$className": "ReplicatedStorage",
+      "Shared": { "$path": "src/ReplicatedStorage/Shared" },
+      "ClientModules": { "$path": "src/ReplicatedStorage/Client" }
+    },
+    "ServerScriptService": { "$path": "src/ServerScriptService" },
+    "StarterPlayer": {
+      "$className": "StarterPlayer",
+      "StarterPlayerScripts": {
+        "$className": "StarterPlayerScripts",
+        "$path": "src/StarterPlayer/StarterPlayerScripts"
+      }
+    }
+  }
+}

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<roblox version="4">
+ <Item class="ReplicatedStorage" referent="RBX1"><Properties><string name="Name">ReplicatedStorage</string></Properties>
+  <Item class="Folder" referent="RBX2"><Properties><string name="Name">Shared</string></Properties>
+   <Item class="ModuleScript" referent="RBX3"><Properties><string name="Name">Config</string></Properties></Item>
+  </Item>
+  <Item class="Folder" referent="RBX13"><Properties><string name="Name">ClientModules</string></Properties>
+   <Item class="ModuleScript" referent="RBX14"><Properties><string name="Name">Hud</string></Properties></Item>
+  </Item>
+ </Item>
+ <Item class="ServerScriptService" referent="RBX5"><Properties><string name="Name">ServerScriptService</string></Properties>
+  <Item class="Script" referent="RBX6"><Properties><string name="Name">Main</string></Properties></Item>
+ </Item>
+ <Item class="StarterPlayer" referent="RBX7"><Properties><string name="Name">StarterPlayer</string></Properties>
+  <Item class="StarterPlayerScripts" referent="RBX8"><Properties><string name="Name">StarterPlayerScripts</string></Properties>
+   <Item class="LocalScript" referent="RBX9"><Properties><string name="Name">Main</string></Properties></Item>
+  </Item>
+ </Item>
+</roblox>

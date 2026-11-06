@@ -1,0 +1,5 @@
+# Keep PowerShell scripts usable on Windows after a clone.
+*.ps1 text eol=crlf
+*.luau text eol=lf
+*.mjs text eol=lf
+*.rbxlx text eol=lf

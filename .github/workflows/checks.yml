@@ -1,0 +1,71 @@
+name: Checks
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test-and-build:
+    name: Test and build the place
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Pinned: a new Rojo release should not be able to break this project overnight.
+      - name: Install Rojo
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="7.7.1"
+          archive="rojo-${version}-linux-x86_64.zip"
+          curl --fail --silent --show-error --location \
+            "https://github.com/rojo-rbx/rojo/releases/download/v${version}/${archive}" \
+            --output "$RUNNER_TEMP/rojo.zip"
+          mkdir -p "$RUNNER_TEMP/rojo"
+          unzip -q "$RUNNER_TEMP/rojo.zip" -d "$RUNNER_TEMP/rojo"
+          chmod +x "$RUNNER_TEMP/rojo/rojo"
+          echo "$RUNNER_TEMP/rojo" >> "$GITHUB_PATH"
+
+      # The tag shows in-game, so "which build am I playing" is answerable at a glance.
+      - name: Stamp the build
+        run: |
+          printf 'return { tag = "%s" }\n' "$(git rev-parse --short HEAD)" \
+            > src/ReplicatedStorage/Shared/BuildTag.luau
+
+      # Build before testing: one of the checks inspects the finished place file.
+      - name: Build the place
+        run: rojo build default.project.json --output build/game.rbxlx
+
+      - name: Run checks
+        run: npm test
+
+      # Parsing is cheap and catches a broken helper script before Windows ever sees it.
+      - name: Parse the Windows scripts
+        shell: pwsh
+        run: |
+          foreach ($file in @('scripts/build.ps1', 'scripts/play.ps1', 'scripts/test.ps1', 'scripts/new-project.ps1')) {
+            if (-not (Test-Path $file)) {
+              Write-Host "::error file=$file::missing"
+              exit 1
+            }
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $file), [ref]$null, [ref]$errors) | Out-Null
+            if ($errors.Count -gt 0) {
+              $errors | ForEach-Object { Write-Host "::error file=$file::$($_.Message)" }
+              exit 1
+            }
+            Write-Host "$file parses cleanly"
+          }
+
+      # A place can build cleanly and still be unplayable: the client LocalScript may be
+      # missing or misclassified, or modules may sit where Rojo cannot load them at runtime.
+      - name: Check the built place
+        run: node tests/place-check.mjs build/game.rbxlx
