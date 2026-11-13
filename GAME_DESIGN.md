@@ -1,0 +1,54 @@
+# DRIFTLINE — original arcade snowboarding game design (proposal)
+
+Status: **proposed, not implemented; owner approval pending**. A fast downhill snowboarding game about choosing a clean racing line versus committing to tricks. One greybox run starts the experience; a network of original alpine courses and distinct events grows from the same grounded movement rules. No reference names, character identities, tracks, art, sound, animations, ROM data or decompiled code are reused. All rules below are independent Luau designs, **not documented facts about 1080**.
+
+## Design pillars and loop
+
+1. A board with readable momentum, controllable edges, slope response and forgiving initial learning curve. 2. An airborne risk window: tricks increase score only if the landing is controlled. 3. Finish quickly and stylishly to earn a clear reward. 4. Spend earned **Trail Tokens** on modest, sidegrade equipment and original cosmetics; equip and ride again. No paid statistical advantage. Input-to-motion latency, predictable landings and readable animation outrank scenery and menu polish.
+
+Run loop: ready/start → server starts timer → ride through ordered gates → takeoff → pose/spin → evaluate touchdown → bank or lose pending trick score → finish → server finalizes score/time/token grant once → unlock/equip → replay. If all gates not passed, finish is rejected and HUD points to missing gate. Leaving/respawning forfeits unbanked points, not previously settled rewards. Best scores/times remain separate per course and mode.
+
+## Controller and physics specification (target tuning, subject to Studio playtest)
+
+State model: Ready, Grounded, Takeoff, Airborne, Landing, Wipeout, Recovering, Finished. Independent `runState` (not started/running/finished) avoids conflating collision and run lifecycle. Track horizontal velocity, yaw/heading, up-vector/terrain normal, grounded confidence, lateral slip, edge intent and last stable checkpoint. Use fixed-step or bounded-delta simulation with ray/sphere/capsule contact probes and robust transitions; test steep-to-flat seams and sideways travel. Prefer stable physical constraints or a custom force/motion solver after in-Studio experiments, not an assumed full-physics solution. Client predicts responsive local motion; server validates authoritative course events, trick banks, equipment and rewards and maintains bounded motion/speed envelopes; network ownership strategy tested before release. Never trust client-provided score, time, checkpoint or currency.
+
+On ground: gravity projected onto the terrain tangent drives downhill acceleration; push/tuck adds bounded acceleration/drag reduction; braking adds controllable drag; coast retains momentum with drag. Steer input rotates heading with speed-sensitive turn rate; stronger edge increases carve grip and turn authority but reduces speed, while insufficient grip produces bounded lateral slip. Ground normal smooths over probe contacts; rim/wall hits shed speed without tunneling. Air: keep ballistic momentum, allow weaker yaw correction and controlled spin; no free midair speed gain. Ramps produce takeoff when support drops with upward velocity; a deliberate pop increases lift at a cooldown cost. Tunables live in shared rules; example *test targets*, not reference values: reach riding speed within ~3–5 s on a medium pitch, brake to under half speed within ~2 s, carve reliably through the greybox S-turn, landing transition within ~0.25 s; final values gated by QA evidence.
+
+Landing: inspect contact normal, board orientation vs travel direction, vertical impact and airborne trick completion. Clean = upright/aligned/controlled, sketchy = moderate yaw/impact (reduced bank + speed loss), bail = severe mismatch/impact (zero pending score + wipeout/recovery). Short landing grace and explicit state hysteresis prevent contact flicker. Wipeouts reset to safe checkpoint after an obvious pause, preserve run timer, apply one specified time penalty (M1 proposal: +3 seconds) and clear unbanked combo. No negative currency. Animation/board lean follows steering, edge, speed, crouch and state; procedural placeholder poses are original and are valid only if visibly readable in Studio.
+
+## Tricks and scoring
+
+M1 input grammar on PC proposal: A/D steer; W tuck/push; S brake; Q/E choose left/right edge (hold, optionally combine steer); Space pop; airborne J/K basic grab pose, A/D yaw/spin, release pose before landing. Context-aware same-key air steering is intentional. On-screen key legend. **Owner may revise mapping before implementation.** Start with two original poses (`Meteor`, `Sail`) plus spin tiers by accumulated yaw. Trick events require airborne state and legal cooldown; one grab plus spin forms a combination, clean landing banks base grab + spin + combo bonus, multiplied by a capped variety chain. Repeats in a chain have diminished value; sketchy bank at reduced factor; bail discards pending trick points. Proposed starting calibration: base grabs 100/120, half-spin 80, full-spin 200, combination +25%, chain x1–x2 capped; numbers are original and tuned from QA. Server derives score from validated state/events and plausible yaw/airtime, rejects impossible sequences and duplicate landings. Score never directly submitted by client. Race result uses time and banked trick score in separate columns, with mode-specific ranking rather than one opaque total.
+
+## Runs and events
+
+M1: **Free Ride Run** on `Switchback Basin`, original greybox route with start, mixed pitches, S-turn, two ramp choices, safe alternate line, obstacle/terrain hazard, two ordered checkpoints and finish. Target 60–120 seconds for a novice; safe traversal must be possible without tricks. A short instruction/ready overlay, speed/timer/score/combo/landing/gate HUD and readable results are the only M1 interface.
+
+Later events: Score Jam (bank tricks before timer); Time Attack (ordered gates, best clean run); Line Challenge (optional route markers with trick requirements); Rival Ghost (recorded safe validated run); head-to-head heats with synchronized start; asynchronous leaderboard seasons after anti-cheat review. Courses: M1 Switchback Basin; later original Frostline Ridge (long sweeping turns), Beacon Quarry (ramps and line choices), Cloudbreak Traverse (technical drops), and Summit Circuit (event course). Each course gets safety line, trick line, gate order and performance budget. Difficulty by event/course/special objectives, not unexplained arbitrary physics inflation. Competitive modes use normalized/locked stats to avoid pay-to-win.
+
+## Progression and unlock catalogue
+
+Server-owned profile schema version, earned tokens, lifetime XP, level, inventory, equipped IDs, achievement flags and per-mode/course records. M1 Studio uses **session-only** profile and explicitly labels it temporary; persistence later in M2 after published-place permission and failure-path tests. Token grant once per unique completed run ID; server calculations use bounded score/time and completion gates; repeated practice runs remain rewarding with a daily cap only if economy testing warrants it (not M1). XP thresholds and token prices versioned; no paid stat boosts. M1 initial inventory: base `Trailboard` (owned), unlockable `Arcboard` sidegrade (small turning gain, small max-speed tradeoff), and cosmetic `Dusk Stripe` decal/color; first legitimate finish grants sufficient tokens for **one** unlock. Unlock → equip → next ride must show effect/appearance; purchase must be idempotent and server validated. Costs and balances are tuning proposals, not implemented facts.
+
+| Category | Unlock route | Effect / stats? | Equip and balance |
+|---|---|---|---|
+| Boards (shapes/handling profiles) | tokens + event mastery; starter free | limited sidegrade turn/grip/speed; **yes** | board slot; cap total advantage, normalize competitive modes; M1 2 boards |
+| Board finish/deck art | tokens, exploration, achievements | visual only; **no** | finish slot on owned board; M1 one stripe |
+| Riders/avatars | XP/story/event mastery | silhouette/voice/pose only; **no** | rider slot; accessibility/readability |
+| Rider outfits, goggles, scarves | tokens and course exploration | visual only; **no** | cosmetic slots; no hidden collision changes |
+| Trick style/pose variants | trick mastery milestones | animation only, identical input/scoring; **no** | trick-style slot; avoid better hitboxes |
+| Landing trails and celebration FX | achievements/challenges | visual only; **no** | effect slot; visibility/performance budget |
+| Course access | level or prior course clear | content access; **no direct stats** | select course; never lock base play behind currency |
+| Events/challenges | course clears, level milestones | mode availability; **no** | event select; fair entry |
+| Titles/badges | achievements or leaderboard tiers | social cosmetic; **no** | profile title slot |
+| Ghost replay skins | skill and records | playback cosmetic; **no** | ghost slot; disable in competitive if distracting |
+
+Levels: XP for valid finishes and challenge goals, level grants course/event access and occasional cosmetic. Achievements: first clean landing, all gates, clean course, varied trick set, exploration marker; no unearned client flags. Optional rotating challenges are server-time bounded and require abuse review before deployment. Leaderboards store validated records only, segmented by course/mode/stat rules; multiplayer reward parity must not favor boosting. No monetization design in M1.
+
+## Animation, camera, sound, presentation
+
+First playable uses authored-original or procedural Roblox rig poses for idle/ready, ride, tuck, left/right carve, takeoff, air, two trick poses, landing, failed landing, crash and recovery. Priority graph: crash > landing > trick > air > carve > tuck > ride > idle; blend parameter drives lean and crouch, not a stationary figure translated over snow. Camera follows direction of travel with speed-aware distance/lookahead, smooth damping and crash reaction; no nausea-inducing auto-roll by default. Input cues (edge lean, pop, landing flash, bank count), subtle original generated/recorded audio later; M1 use original placeholder cues if feasible, never reference assets. Modern stream-energy UI direction: charcoal/alpine-white, electric coral and cool cyan, oversized readable run telemetry, restrained animated score ticker; no Twitch marks or layouts. Full navigation/inventory/challenge/leaderboard interface is a later milestone.
+
+## Accessibility and target devices
+
+M1 **PC keyboard** guaranteed and tested. Controller/touch are planned and require separate owner-reviewed input mapping, touch layout and device QA in M4; no claim of supported devices before tests. Color-independent landing labels, readable HUD, camera shake setting, optional remap in later milestones; avoid tricks requiring simultaneous impossible mobile gestures.
