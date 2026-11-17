@@ -1,9 +1,10 @@
 {
-  "name": "game-2",
+  "name": "driftline",
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node tests/run-tests.mjs"
+    "test": "node tests/run-tests.mjs",
+    "build": "node scripts/build-place.mjs build/game.rbxlx"
   },
   "devDependencies": {
     "luau-web": "1.5.1"

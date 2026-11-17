@@ -9,6 +9,8 @@ local function signal()
 end
 
 local Vector3 = { new = function(x, y, z) return { X = x or 0, Y = y or 0, Z = z or 0 } end }
+Vector3.zero = Vector3.new(0, 0, 0)
+Vector3.yAxis = Vector3.new(0, 1, 0)
 local Vector2 = { new = function(x, y) return { X = x or 0, Y = y or 0 } end }
 local function colour(r, g, b) return { r = r or 0, g = g or 0, b = b or 0 } end
 local Color3 = { new = colour, fromRGB = colour }
@@ -86,10 +88,23 @@ local ReplicatedStorage = service("ReplicatedStorage")
 local Shared = service("Folder"); Shared.Name = "Shared"; Shared.Parent = ReplicatedStorage
 local tagModule = service("ModuleScript"); tagModule.Name = "BuildTag"; tagModule.Parent = Shared
 local configModule = service("ModuleScript"); configModule.Name = "Config"; configModule.Parent = Shared
+local physicsModule = service("ModuleScript"); physicsModule.Name = "Physics"; physicsModule.Parent = Shared
+local landingModule = service("ModuleScript"); landingModule.Name = "Landing"; landingModule.Parent = Shared
+local trickCatalogModule = service("ModuleScript"); trickCatalogModule.Name = "TrickCatalog"; trickCatalogModule.Parent = Shared
+local trickScorerModule = service("ModuleScript"); trickScorerModule.Name = "TrickScorer"; trickScorerModule.Parent = Shared
+local boardCatalogModule = service("ModuleScript"); boardCatalogModule.Name = "BoardCatalog"; boardCatalogModule.Parent = Shared
+local runRulesModule = service("ModuleScript"); runRulesModule.Name = "RunRules"; runRulesModule.Parent = Shared
+local networkContractsModule = service("ModuleScript"); networkContractsModule.Name = "NetworkContracts"; networkContractsModule.Parent = Shared
+local profileModule = service("ModuleScript"); profileModule.Name = "Profile"; profileModule.Parent = Shared
 local ClientModules = service("Folder"); ClientModules.Name = "ClientModules"; ClientModules.Parent = ReplicatedStorage
 local hudModule = service("ModuleScript"); hudModule.Name = "Hud"; hudModule.Parent = ClientModules
+local hudPresenterModule = service("ModuleScript"); hudPresenterModule.Name = "HudPresenter"; hudPresenterModule.Parent = ClientModules
+local inputMapperModule = service("ModuleScript"); inputMapperModule.Name = "InputMapper"; inputMapperModule.Parent = ClientModules
+local boardControllerModule = service("ModuleScript"); boardControllerModule.Name = "BoardController"; boardControllerModule.Parent = ClientModules
+local animationControllerModule = service("ModuleScript"); animationControllerModule.Name = "AnimationController"; animationControllerModule.Parent = ClientModules
+local cameraControllerModule = service("ModuleScript"); cameraControllerModule.Name = "CameraController"; cameraControllerModule.Parent = ClientModules
 
-local player = service("Player"); player.Name = "Player"
+local player = service("Player"); player.Name = "Player"; player.UserId = 1
 local playerGui = service("PlayerGui"); playerGui.Name = "PlayerGui"; playerGui.Parent = player
 local Players = { LocalPlayer = player }
 local userInput = service("UserInputService")
@@ -100,20 +115,52 @@ local httpService = service("HttpService")
 local runService = service("RunService"); runService.RenderStepped = signal()
 local readyEvent = signal()
 local Remotes = service("Folder"); Remotes.Name = "Remotes"; Remotes.Parent = ReplicatedStorage
-local readyRemote = service("RemoteEvent"); readyRemote.Name = "Ready"; readyRemote.Parent = Remotes
+local function makeRemote(name, className)
+	local remote = service(className or "RemoteEvent"); remote.Name = name; remote.Parent = Remotes
+	remote.OnClientEvent = signal()
+	remote.OnServerEvent = signal()
+	rawset(remote, "FireServer", function() end)
+	rawset(remote, "FireClient", function() end)
+	rawset(remote, "InvokeServer", function() return { ok = false } end)
+	return remote
+end
+local readyRemote = makeRemote("Ready")
+makeRemote("StartRun")
+makeRemote("TrickEvent")
+makeRemote("LandEvent")
+makeRemote("WipeoutEvent")
+makeRemote("RunUpdate")
+makeRemote("ProfileUpdate")
+makeRemote("Results")
+makeRemote("UnlockItem", "RemoteFunction")
+makeRemote("EquipItem", "RemoteFunction")
 HARNESS_DROP_REMOTES = function()
 	for index, child in ipairs(ReplicatedStorage.children) do
 		if child.Name == "Remotes" then table.remove(ReplicatedStorage.children, index) break end
 	end
 end
-readyRemote.OnClientEvent = signal()
-readyRemote.OnServerEvent = signal()
 
 -- `script` is the LocalScript itself; its Parent is the PlayerScripts container, which does
 -- NOT contain the client modules. Modelling that is what catches the wrong require path.
 local playerScripts = service("Folder"); playerScripts.Name = "PlayerScripts"; playerScripts.Parent = player
 local script = service("LocalScript"); script.Name = "Main"; script.Parent = playerScripts
 
+-- TextButtons need a click signal (HudPresenter/Main.client connect at boot).
+local originalNewInstance = newInstance
+newInstance = function(className)
+	local createdInstance = originalNewInstance(className)
+	if className == "TextButton" then
+		createdInstance.MouseButton1Click = signal()
+	end
+	return createdInstance
+end
+Instance.new = newInstance
+
+local workspace = service("Workspace")
+local fakeCamera = { CFrame = { Position = Vector3.new(0, 10, 0) }, CameraType = nil }
+rawset(workspace, "CurrentCamera", fakeCamera)
+
+local serviceCache = {}
 local game = { GetService = function(_, name)
 	if name == "Players" then return Players end
 	if name == "ReplicatedStorage" then return ReplicatedStorage end
@@ -121,6 +168,9 @@ local game = { GetService = function(_, name)
 	if name == "ScriptContext" then return scriptContext end
 	if name == "RunService" then return runService end
 	if name == "HttpService" then return httpService end
-	return service(name)
+	if name == "Workspace" then return workspace end
+	if serviceCache[name] then return serviceCache[name] end
+	local createdService = service(name)
+	serviceCache[name] = createdService
+	return createdService
 end }
-local workspace = service("Workspace")

@@ -19,6 +19,23 @@ function Hud.label(parent, text, size, position)
 	return instance
 end
 
+function Hud.button(parent, text, size, position)
+	local instance = Instance.new("TextButton")
+	instance.Size = size
+	instance.Position = position
+	instance.BackgroundColor3 = Color3.fromRGB(255, 122, 89)
+	instance.TextColor3 = Color3.new(1, 1, 1)
+	instance.Text = text
+	instance.Font = Enum.Font.GothamBold
+	instance.TextScaled = true
+	instance.AutoButtonColor = true
+	instance.Parent = parent
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0, 12)
+	corner.Parent = instance
+	return instance
+end
+
 function Hud.build(playerGui, titleText)
 	local screen = Instance.new("ScreenGui")
 	screen.Name = "GameHud"

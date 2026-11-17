@@ -1,0 +1,10 @@
+-- Landing classification thresholds.
+assert(Landing.classify(10, 5, 5) == "clean", "gentle aligned = clean")
+assert(Landing.classify(40, 30, 30) == "sketchy", "moderate = sketchy")
+assert(Landing.classify(70, 10, 10) == "bail", "hard impact = bail")
+assert(Landing.classify(10, 80, 10) == "bail", "bad alignment = bail")
+assert(Landing.classify(10, 10, 120) == "bail", "bad yaw = bail")
+assert(Landing.bankFactor("clean") == 1, "clean banks full")
+assert(Landing.bankFactor("sketchy") == 0.5, "sketchy banks half")
+assert(Landing.bankFactor("bail") == 0, "bail banks nothing")
+print("PASS Landing: clean/sketchy/bail thresholds")

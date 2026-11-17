@@ -1,5 +1,5 @@
 {
-  "name": "game-2",
+  "name": "driftline",
   "tree": {
     "$className": "DataModel",
     "ReplicatedStorage": {
@@ -13,6 +13,246 @@
       "StarterPlayerScripts": {
         "$className": "StarterPlayerScripts",
         "$path": "src/StarterPlayer/StarterPlayerScripts"
+      }
+    },
+    "Workspace": {
+      "$className": "Workspace",
+      "Course": {
+        "$className": "Folder",
+        "StartPad": {
+          "$className": "Part",
+          "Size": [40, 2, 40],
+          "CFrame": [0, 0, 0, 0, 0, 0],
+          "Color3": [0.85, 0.9, 0.95],
+          "Material": "SmoothPlastic",
+          "Anchored": true,
+          "CanCollide": true
+        },
+        "Spawn": {
+          "$className": "SpawnLocation",
+          "Size": [8, 1, 8],
+          "CFrame": [0, 2, -10, 0, 0, 0],
+          "Color3": [0.4, 0.8, 1],
+          "Anchored": true,
+          "CanCollide": true,
+          "Neutral": true
+        },
+        "SlopeA": {
+          "$className": "Part",
+          "Size": [60, 2, 124],
+          "CFrame": [0, -15.5, 80, 0.244, 0, 0],
+          "Color3": [0.9, 0.93, 0.97],
+          "Material": "SmoothPlastic",
+          "Anchored": true,
+          "CanCollide": true
+        },
+        "WallA1": {
+          "$className": "Part",
+          "Size": [2, 6, 124],
+          "CFrame": [-30, -12.5, 80, 0.244, 0, 0],
+          "Color3": [0.3, 0.35, 0.45],
+          "Material": "SmoothPlastic",
+          "Anchored": true,
+          "CanCollide": true
+        },
+        "WallA2": {
+          "$className": "Part",
+          "Size": [2, 6, 124],
+          "CFrame": [30, -12.5, 80, 0.244, 0, 0],
+          "Color3": [0.3, 0.35, 0.45],
+          "Material": "SmoothPlastic",
+          "Anchored": true,
+          "CanCollide": true
+        },
+        "Checkpoint": {
+          "$className": "Part",
+          "Size": [50, 2, 40],
+          "CFrame": [0, -31, 160, 0, 0, 0],
+          "Color3": [0.85, 0.9, 0.95],
+          "Material": "SmoothPlastic",
+          "Anchored": true,
+          "CanCollide": true
+        },
+        "SlopeB": {
+          "$className": "Part",
+          "Size": [124, 2, 60],
+          "CFrame": [-85, -46.5, 160, 0, 0, 0.244],
+          "Color3": [0.9, 0.93, 0.97],
+          "Material": "SmoothPlastic",
+          "Anchored": true,
+          "CanCollide": true
+        },
+        "WallB1": {
+          "$className": "Part",
+          "Size": [124, 6, 2],
+          "CFrame": [-85, -43.5, 130, 0, 0, 0.244],
+          "Color3": [0.3, 0.35, 0.45],
+          "Material": "SmoothPlastic",
+          "Anchored": true,
+          "CanCollide": true
+        },
+        "WallB2": {
+          "$className": "Part",
+          "Size": [124, 6, 2],
+          "CFrame": [-85, -43.5, 190, 0, 0, 0.244],
+          "Color3": [0.3, 0.35, 0.45],
+          "Material": "SmoothPlastic",
+          "Anchored": true,
+          "CanCollide": true
+        },
+        "FinalFlat": {
+          "$className": "Part",
+          "Size": [60, 2, 60],
+          "CFrame": [-165, -62, 160, 0, 0, 0],
+          "Color3": [0.85, 0.9, 0.95],
+          "Material": "SmoothPlastic",
+          "Anchored": true,
+          "CanCollide": true
+        },
+        "SlopeC": {
+          "$className": "Part",
+          "Size": [50, 2, 94],
+          "CFrame": [-165, -73.5, 235, 0.244, 0, 0],
+          "Color3": [0.9, 0.93, 0.97],
+          "Material": "SmoothPlastic",
+          "Anchored": true,
+          "CanCollide": true
+        },
+        "WallC1": {
+          "$className": "Part",
+          "Size": [2, 6, 94],
+          "CFrame": [-190, -70.5, 235, 0.244, 0, 0],
+          "Color3": [0.3, 0.35, 0.45],
+          "Material": "SmoothPlastic",
+          "Anchored": true,
+          "CanCollide": true
+        },
+        "WallC2": {
+          "$className": "Part",
+          "Size": [2, 6, 94],
+          "CFrame": [-140, -70.5, 235, 0.244, 0, 0],
+          "Color3": [0.3, 0.35, 0.45],
+          "Material": "SmoothPlastic",
+          "Anchored": true,
+          "CanCollide": true
+        },
+        "Ramp1": {
+          "$className": "WedgePart",
+          "Size": [14, 5, 18],
+          "CFrame": [12, -9, 55, 0.244, 0, 0],
+          "Color3": [1, 0.6, 0.3],
+          "Material": "SmoothPlastic",
+          "Anchored": true,
+          "CanCollide": true
+        },
+        "Ramp2": {
+          "$className": "WedgePart",
+          "Size": [18, 5, 14],
+          "CFrame": [-60, -40, 150, 0, 0, 0.244],
+          "Color3": [1, 0.6, 0.3],
+          "Material": "SmoothPlastic",
+          "Anchored": true,
+          "CanCollide": true
+        },
+        "Gates": {
+          "$className": "Folder",
+          "Gate1": {
+            "$className": "Part",
+            "Size": [24, 10, 4],
+            "CFrame": [0, -10, 80, 0.244, 0, 0],
+            "Color3": [0.37, 0.78, 1],
+            "Material": "Neon",
+            "Transparency": 0.6,
+            "Anchored": true,
+            "CanCollide": false
+          },
+          "Gate1PostL": {
+            "$className": "Part",
+            "Size": [2, 14, 2],
+            "CFrame": [-12, -8, 80, 0.244, 0, 0],
+            "Color3": [0.37, 0.78, 1],
+            "Material": "Neon",
+            "Anchored": true,
+            "CanCollide": true
+          },
+          "Gate1PostR": {
+            "$className": "Part",
+            "Size": [2, 14, 2],
+            "CFrame": [12, -8, 80, 0.244, 0, 0],
+            "Color3": [0.37, 0.78, 1],
+            "Material": "Neon",
+            "Anchored": true,
+            "CanCollide": true
+          },
+          "Gate2": {
+            "$className": "Part",
+            "Size": [4, 10, 24],
+            "CFrame": [-85, -41, 160, 0, 0, 0.244],
+            "Color3": [0.37, 0.78, 1],
+            "Material": "Neon",
+            "Transparency": 0.6,
+            "Anchored": true,
+            "CanCollide": false
+          },
+          "Gate2PostL": {
+            "$className": "Part",
+            "Size": [2, 14, 2],
+            "CFrame": [-85, -39, 148, 0, 0, 0.244],
+            "Color3": [0.37, 0.78, 1],
+            "Material": "Neon",
+            "Anchored": true,
+            "CanCollide": true
+          },
+          "Gate2PostR": {
+            "$className": "Part",
+            "Size": [2, 14, 2],
+            "CFrame": [-85, -39, 172, 0, 0, 0.244],
+            "Color3": [0.37, 0.78, 1],
+            "Material": "Neon",
+            "Anchored": true,
+            "CanCollide": true
+          }
+        },
+        "FinishPad": {
+          "$className": "Part",
+          "Size": [40, 2, 20],
+          "CFrame": [-165, -85, 270, 0, 0, 0],
+          "Color3": [0.2, 0.2, 0.2],
+          "Material": "SmoothPlastic",
+          "Anchored": true,
+          "CanCollide": true
+        },
+        "FinishArch": {
+          "$className": "Part",
+          "Size": [40, 12, 4],
+          "CFrame": [-165, -78, 270, 0, 0, 0],
+          "Color3": [1, 0.48, 0.35],
+          "Material": "Neon",
+          "Transparency": 0.5,
+          "Anchored": true,
+          "CanCollide": false
+        },
+        "Hazards": {
+          "$className": "Folder",
+          "Rock1": {
+            "$className": "Part",
+            "Size": [8, 8, 8],
+            "CFrame": [-15, -8, 100, 0, 0.5, 0],
+            "Color3": [0.25, 0.25, 0.28],
+            "Material": "Slate",
+            "Anchored": true,
+            "CanCollide": true
+          },
+          "Rock2": {
+            "$className": "Part",
+            "Size": [8, 8, 8],
+            "CFrame": [-180, -68, 230, 0, 0.5, 0],
+            "Color3": [0.25, 0.25, 0.28],
+            "Material": "Slate",
+            "Anchored": true,
+            "CanCollide": true
+          }
+        }
       }
     }
   }

@@ -1,0 +1,22 @@
+-- Run rules: ordered gates, finish-once, token grant, wipeout penalty.
+local run = RunRules.newRun("run-1")
+assert(RunRules.nextGate(run) == 1, "first gate is 1")
+assert(not RunRules.passGate(run, 2), "out-of-order gate rejected")
+assert(RunRules.passGate(run, 1), "gate 1 passes")
+assert(not RunRules.passGate(run, 1), "duplicate gate rejected")
+assert(RunRules.nextGate(run) == 2, "next is gate 2")
+assert(not RunRules.canFinish(run), "cannot finish before gate 2")
+assert(RunRules.passGate(run, 2), "gate 2 passes")
+assert(RunRules.canFinish(run), "can finish after both gates")
+assert(RunRules.tokenGrant(0, 60) >= 100, "first finish buys one cheapest unlock")
+assert(RunRules.tokenGrant(0, 60) == 120, "base grant 120")
+assert(RunRules.tokenGrant(10000, 60) <= 300, "grant capped")
+
+local run2 = RunRules.newRun("run-2")
+local before = RunRules.elapsedWithPenalty(10, run2.penalty)
+RunRules.applyWipeoutPenalty(run2)
+local after = RunRules.elapsedWithPenalty(10, run2.penalty)
+assert(after - before == 3, "wipeout +3s once")
+assert(after > before, "timer never goes backward")
+
+print("PASS RunRules: gates/finish/grant/penalty")
