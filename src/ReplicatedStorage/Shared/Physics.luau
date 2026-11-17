@@ -68,7 +68,9 @@ function Physics.stepGrounded(state: GroundedState, input: GroundedInput, slopeP
 	local speedFactor = clamp(speed / math.max(1, board.maxSpeed), 0, 1)
 	local turnAuthority = board.turnRate * (0.45 + 0.55 * speedFactor)
 	turnAuthority *= 1 + 0.35 * math.abs(edge)
-	local heading = (state.heading or 0) + steer * turnAuthority * dt
+	-- Heading convention: forward = (-sin h, 0, -cos h), i.e. CFrame.Angles(0,h,0).LookVector.
+	-- Increasing h turns LEFT, so steer>0 (D, right) decreases heading.
+	local heading = (state.heading or 0) - steer * turnAuthority * dt
 
 	-- Lateral slip: bounded, reduced by grip and by edging.
 	local grip = clamp(board.grip + 0.25 * math.abs(edge), 0, 1)
@@ -84,7 +86,7 @@ function Physics.stepAir(state: { heading: number, spin: number }, input: { stee
 	local steer = clamp(input.steer or 0, -1, 1)
 	local yawRate = cfg.spinRate * cfg.airSteerScale
 	local spin = (state.spin or 0) + steer * yawRate * dt
-	local heading = (state.heading or 0) + steer * yawRate * dt
+	local heading = (state.heading or 0) - steer * yawRate * dt
 	return { heading = heading, spin = spin }
 end
 

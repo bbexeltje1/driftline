@@ -23,14 +23,14 @@ assert(capped.speed <= board.maxSpeed, "speed capped")
 
 -- Steering turns heading; edge costs speed but turns harder.
 local turn = step(30, { steer = 1, tuck = false, brake = false, edge = 0 }, 0.2, 0.5)
-assert(turn.heading > 0, "steer right turns heading")
+assert(turn.heading < 0, "steer right (D) turns right: heading decreases in CFrame yaw convention")
 local edged = step(30, { steer = 1, tuck = false, brake = false, edge = 1 }, 0.2, 0.5)
 assert(edged.speed < turn.speed, "edge costs speed")
-assert(edged.heading > turn.heading, "edge turns harder")
+assert(edged.heading < turn.heading, "edge turns harder (more negative = further right)")
 
 -- Air yaw is weaker than ground turn for same input/dt.
 local air = Physics.stepAir({ heading = 0, spin = 0 }, { steer = 1 }, 0.5)
-assert(air.heading > 0 and air.heading < turn.heading, "air steer weaker than ground")
+assert(air.heading < 0 and air.heading > turn.heading, "air steer weaker than ground")
 
 -- Pop cooldown.
 assert(Physics.popVelocity(0, 10) ~= nil, "pop available after cooldown")

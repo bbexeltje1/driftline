@@ -66,6 +66,10 @@ local function pushUpdate(entry: PlayerRun, extra: any?)
 		tokens = profile.tokens,
 		penalty = entry.run.penalty,
 	}
+	if entry.pendingRespawn then
+		payload.respawnAt = entry.pendingRespawn
+		entry.pendingRespawn = nil
+	end
 	if extra then
 		for key, value in pairs(extra) do
 			payload[key] = value
@@ -73,6 +77,9 @@ local function pushUpdate(entry: PlayerRun, extra: any?)
 	end
 	remotes.RunUpdate:FireClient(entry.player, payload)
 end
+
+-- CFrame.Angles(0, pi, 0): the rider looks along +Z, the course direction.
+local RIDER_FACING = CFrame.Angles(0, math.pi, 0)
 
 local function teleportTo(entry: PlayerRun, cframe: CFrame)
 	local character = entry.player.Character
@@ -82,9 +89,11 @@ local function teleportTo(entry: PlayerRun, cframe: CFrame)
 	local root = character:FindFirstChild("HumanoidRootPart")
 	if root then
 		local hrp = root :: BasePart
-		hrp.CFrame = cframe + Vector3.new(0, 3, 0)
+		-- Keep the course position, but always face down the course (+Z).
+		hrp.CFrame = CFrame.new(cframe.Position + Vector3.new(0, 3, 0)) * RIDER_FACING
 		hrp.AssemblyLinearVelocity = Vector3.zero
 		hrp.AssemblyAngularVelocity = Vector3.zero
+		entry.pendingRespawn = hrp.CFrame
 	end
 end
 
@@ -184,6 +193,15 @@ function RunService.poll(player: Player)
 		return
 	end
 	local position = (root :: BasePart).Position
+
+	-- Fell off the course: same consequence as a wipeout, reset to checkpoint.
+	if position.Y < Config.run.fallHeight then
+		TrickScorer.bail(entry.scorer)
+		RunRules.applyWipeoutPenalty(entry.run)
+		teleportTo(entry, courseData.checkpointCFrame)
+		pushUpdate(entry, { landing = "bail", wipedOut = true })
+		return
+	end
 
 	-- Hazard proximity -> wipeout (server-observed, not client-claimed).
 	for _, hazardPos in ipairs(courseData.hazardPositions) do

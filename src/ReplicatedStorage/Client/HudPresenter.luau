@@ -24,9 +24,13 @@ function HudPresenter.build(playerGui: PlayerGui, titleText: string): any
 		UDim2.fromOffset(16, 372)
 	)
 	refs.legend.TextSize = 13
+	refs.legend.AnchorPoint = Vector2.new(0, 1)
+	refs.legend.Position = UDim2.new(0, 16, 1, -16)
 
 	refs.startButton = Hud.button(screen, "START RUN (Enter)", UDim2.fromOffset(240, 48), UDim2.fromOffset(16, 420))
 	refs.results = Hud.label(screen, "", UDim2.fromOffset(420, 90), UDim2.fromOffset(16, 480))
+	refs.results.AnchorPoint = Vector2.new(0.5, 0.5)
+	refs.results.Position = UDim2.new(0.5, 0, 0.4, 0)
 	refs.results.Visible = false
 
 	-- Shop: one button per unlockable item (server validates funds/ownership).

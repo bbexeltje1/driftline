@@ -23,7 +23,7 @@ function BoardController.new(player: Player, remotes: any, boardStats: any): any
 		remotes = remotes,
 		boardStats = boardStats,
 		speed = 0,
-		heading = 0,
+		heading = math.pi, -- course runs +Z; CFrame yaw pi faces +Z
 		slip = 0,
 		edge = 0,
 		grounded = false,
@@ -43,13 +43,23 @@ function BoardController.new(player: Player, remotes: any, boardStats: any): any
 			self.airTime = 0
 		end
 	end
+	-- Server teleports (start, checkpoint, retry) send the new CFrame; snap to it.
 	function self:resetTo(cframe: CFrame)
 		self.speed = 0
 		self.spin = 0
 		self.airTime = 0
 		self.velocity = Vector3.zero
-		self.heading = select(2, cframe:ToEulerAnglesYXZ())
+		local look = cframe.LookVector
+		-- forward = (-sin h, 0, -cos h): recover h from the look vector.
+		self.heading = math.atan2(-look.X, -look.Z)
 		self.grounded = false
+		local character = self.player.Character
+		local root = character and character:FindFirstChild("HumanoidRootPart")
+		if root then
+			local hrp = root :: BasePart
+			hrp.CFrame = cframe
+			hrp.AssemblyLinearVelocity = Vector3.zero
+		end
 	end
 	function self:step(intent: any, dt: number)
 		local character = self.player.Character

@@ -95,6 +95,9 @@ remotes.RunUpdate.OnClientEvent:Connect(function(payload: any)
 	if type(payload) ~= "table" then
 		return
 	end
+	if typeof(payload.respawnAt) == "CFrame" then
+		controller:resetTo(payload.respawnAt)
+	end
 	if payload.state == "running" then
 		running = true
 		controller:setRunning(true)

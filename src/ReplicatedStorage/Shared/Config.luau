@@ -52,6 +52,7 @@ return {
 		gateCount = 2,
 		gateRadius = 18, -- studs from gate centre that count as passing
 		finishRadius = 18,
+		fallHeight = -120, -- below this the rider has fallen off the course
 	},
 
 	-- Validation envelopes (server authority).
