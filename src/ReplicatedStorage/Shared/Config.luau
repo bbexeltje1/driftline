@@ -21,6 +21,18 @@ return {
 		maxDelta = 1 / 30, -- bounded simulation step
 	},
 
+	-- Physics-driven ride (spring suspension + VectorForce). Gravity above is the game's gravity;
+	-- Roblox's own workspace gravity is corrected to it on the client.
+	ride = {
+		restLength = 2.6, -- studs from rider centre to ground at rest
+		springK = 240, -- support accel per stud of compression
+		springDamp = 18, -- support accel per stud/s of closing speed
+		probeLength = 12, -- ground probe reach (studs)
+		gripRate = 5.5, -- lateral velocity removed per second at grip 1
+		launchHold = 0.15, -- seconds the spring is ignored after a pop
+		landingMinAir = 0.2, -- seconds airborne before a landing counts as a trick landing
+	},
+
 	-- Landing classification thresholds (impact studs/s, degrees).
 	landing = {
 		cleanMaxImpact = 28,

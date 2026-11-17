@@ -161,9 +161,8 @@ RunService.RenderStepped:Connect(function(dt: number)
 	if intent.startPressed or intent.retryPressed then
 		startRun()
 	end
-	if running then
-		controller:step(intent, dt)
-	end
+	-- Always step: the rider stands on the pad before Enter; drive inputs only count during a run.
+	controller:step(intent, dt)
 	animator:apply(controller.pose, intent.steer, controller.edge, controller.speed)
 	cameraCtl:step(controller.heading, controller.speed, dt)
 	hud:setSpeed(controller.speed)

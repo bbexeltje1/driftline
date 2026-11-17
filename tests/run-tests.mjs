@@ -44,6 +44,7 @@ try {
     ["BoardCatalog", "src/ReplicatedStorage/Shared/BoardCatalog.luau"],
     ["Landing", "src/ReplicatedStorage/Shared/Landing.luau"],
     ["Physics", "src/ReplicatedStorage/Shared/Physics.luau"],
+    ["RideDynamics", "src/ReplicatedStorage/Shared/RideDynamics.luau"],
     ["RunRules", "src/ReplicatedStorage/Shared/RunRules.luau"],
     ["TrickScorer", "src/ReplicatedStorage/Shared/TrickScorer.luau"],
     ["NetworkContracts", "src/ReplicatedStorage/Shared/NetworkContracts.luau"],
@@ -62,7 +63,7 @@ try {
     const source = await read(file);
     pureChunk += `local ${name} = (function()\n${source}\nend)()\n__byToken[__tokens.${name}] = ${name}\n`;
   }
-  for (const spec of ["physics.spec.luau", "landing.spec.luau", "trick.spec.luau", "runrules.spec.luau", "profile.spec.luau", "contracts.spec.luau"]) {
+  for (const spec of ["physics.spec.luau", "ride.spec.luau", "landing.spec.luau", "trick.spec.luau", "runrules.spec.luau", "profile.spec.luau", "contracts.spec.luau"]) {
     pureChunk += await read(`tests/${spec}`);
     pureChunk += "\n";
   }
@@ -77,6 +78,7 @@ try {
     Config: "src/ReplicatedStorage/Shared/Config.luau",
     Tag: "src/ReplicatedStorage/Shared/BuildTag.luau",
     Physics: "src/ReplicatedStorage/Shared/Physics.luau",
+    RideDynamics: "src/ReplicatedStorage/Shared/RideDynamics.luau",
     Landing: "src/ReplicatedStorage/Shared/Landing.luau",
     TrickCatalog: "src/ReplicatedStorage/Shared/TrickCatalog.luau",
     TrickScorer: "src/ReplicatedStorage/Shared/TrickScorer.luau",
@@ -99,6 +101,7 @@ try {
     Config: "configModule",
     Tag: "tagModule",
     Physics: "physicsModule",
+    RideDynamics: "rideDynamicsModule",
     Landing: "landingModule",
     TrickCatalog: "trickCatalogModule",
     TrickScorer: "trickScorerModule",
@@ -120,7 +123,7 @@ try {
   wiring += "local __sharedScript = { Parent = Shared }\n";
   wiring += "local __clientScript = { Parent = ClientModules }\n";
   wiring += "require = function(module) local value = __byModule[module]; if value == nil then error(\"no module registered for \"..tostring(module and module.Name)) end; return value end\n";
-  const sharedNames = ["Config", "TrickCatalog", "BoardCatalog", "Landing", "Physics", "RunRules", "TrickScorer", "NetworkContracts", "Profile"];
+  const sharedNames = ["Config", "TrickCatalog", "BoardCatalog", "Landing", "Physics", "RideDynamics", "RunRules", "TrickScorer", "NetworkContracts", "Profile"];
   const clientNames = ["Hud", "HudPresenter", "InputMapper", "BoardController", "AnimationController", "CameraController"];
   wiring += "script = __sharedScript\n";
   wiring += `local Tag = (function()\n${moduleSources.Tag}\nend)()\n__byModule[tagModule] = Tag\n`;

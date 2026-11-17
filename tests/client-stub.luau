@@ -90,6 +90,7 @@ local tagModule = service("ModuleScript"); tagModule.Name = "BuildTag"; tagModul
 local configModule = service("ModuleScript"); configModule.Name = "Config"; configModule.Parent = Shared
 local physicsModule = service("ModuleScript"); physicsModule.Name = "Physics"; physicsModule.Parent = Shared
 local landingModule = service("ModuleScript"); landingModule.Name = "Landing"; landingModule.Parent = Shared
+local rideDynamicsModule = service("ModuleScript"); rideDynamicsModule.Name = "RideDynamics"; rideDynamicsModule.Parent = Shared
 local trickCatalogModule = service("ModuleScript"); trickCatalogModule.Name = "TrickCatalog"; trickCatalogModule.Parent = Shared
 local trickScorerModule = service("ModuleScript"); trickScorerModule.Name = "TrickScorer"; trickScorerModule.Parent = Shared
 local boardCatalogModule = service("ModuleScript"); boardCatalogModule.Name = "BoardCatalog"; boardCatalogModule.Parent = Shared
