@@ -6,9 +6,9 @@ local RunService = game:GetService("RunService")
 local Config = require(ReplicatedStorage.Shared.Config)
 local BoardCatalog = require(ReplicatedStorage.Shared.BoardCatalog)
 local Profile = require(ReplicatedStorage.Shared.Profile)
-local CourseService = require(script.Modules.CourseService)
-local ProfileService = require(script.Modules.ProfileService)
-local DriftRunService = require(script.Modules.RunService)
+local CourseService = require(script.Parent.Modules.CourseService)
+local ProfileService = require(script.Parent.Modules.ProfileService)
+local DriftRunService = require(script.Parent.Modules.RunService)
 
 -- Remotes exist before anything heavy can fail (template rule 3).
 local remotes = Instance.new("Folder")

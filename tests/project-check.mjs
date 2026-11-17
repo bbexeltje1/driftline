@@ -78,6 +78,28 @@ async function walk(node, where) {
   }
 }
 
+// Luau paths: Rojo places a script's sibling folders beside it, so a server Script must reach
+// "Modules" through script.Parent (the ServerScriptService folder). script.Modules is nil at runtime.
+const luauRoot = path.join(root, "src");
+async function listLuau(dir) {
+  const entries = await fs.readdir(dir, { withFileTypes: true });
+  const out = [];
+  for (const entry of entries) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) out.push(...(await listLuau(full)));
+    else if (entry.name.endsWith(".luau")) out.push(full);
+  }
+  return out;
+}
+for (const file of await listLuau(luauRoot)) {
+  const lines = (await fs.readFile(file, "utf8")).split("\n");
+  lines.forEach((line, index) => {
+    if (/(^|[^.\w])script\.Modules\b/.test(line.replace(/--.*$/, ""))) {
+      failures.push(`${path.relative(root, file)}:${index + 1}: "script.Modules" is nil here; use script.Parent.Modules`);
+    }
+  });
+}
+
 for (const key of Object.keys(project)) {
   if (!topLevelKeys.has(key)) failures.push(`top-level key "${key}" is not a Rojo project key`);
 }
