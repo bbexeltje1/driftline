@@ -126,6 +126,12 @@ task.spawn(function()
 end)
 
 -- Expose catalogue size for diagnostics (no behaviour on instances).
-print("[driftline] server: catalogue boards=" .. tostring(#BoardCatalog.Boards) .. " ready")
+-- Board table is keyed by name, so # would always be 0; count the keys instead.
+local boardNames = {}
+for name in pairs(BoardCatalog.Boards) do
+	table.insert(boardNames, name)
+end
+table.sort(boardNames)
+print("[driftline] server: catalogue boards=" .. tostring(#boardNames) .. " (" .. table.concat(boardNames, ", ") .. ")")
 ReplicatedStorage:SetAttribute(Config.readyAttribute, true)
 print("[driftline] server: ready")
