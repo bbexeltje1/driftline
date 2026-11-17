@@ -14,16 +14,19 @@ local tag = if tagOk and type(tagModule) == "table" then tostring(tagModule.tag)
 local Config = require(ReplicatedStorage.Shared.Config)
 -- Client modules come from ReplicatedStorage, never from beside this script (template rule 1).
 local clientModules = ReplicatedStorage:WaitForChild("ClientModules", 10)
-local Hud = require(clientModules:WaitForChild("Hud"))
-local HudPresenter = require(clientModules:WaitForChild("HudPresenter"))
-local InputMapper = require(clientModules:WaitForChild("InputMapper"))
-local BoardController = require(clientModules:WaitForChild("BoardController"))
-local AnimationController = require(clientModules:WaitForChild("AnimationController"))
-local CameraController = require(clientModules:WaitForChild("CameraController"))
+if not clientModules then
+	error("ClientModules folder missing from ReplicatedStorage")
+end
+local Hud = require(clientModules:WaitForChild("Hud", 10))
+local HudPresenter = require(clientModules:WaitForChild("HudPresenter", 10))
+local InputMapper = require(clientModules:WaitForChild("InputMapper", 10))
+local BoardController = require(clientModules:WaitForChild("BoardController", 10))
+local AnimationController = require(clientModules:WaitForChild("AnimationController", 10))
+local CameraController = require(clientModules:WaitForChild("CameraController", 10))
 local BoardCatalog = require(ReplicatedStorage.Shared.BoardCatalog)
 local Profile = require(ReplicatedStorage.Shared.Profile)
 
-local playerGui = player:WaitForChild("PlayerGui")
+local playerGui = player:WaitForChild("PlayerGui", 10)
 local hud = HudPresenter.build(playerGui, Config.displayName)
 
 local status = Hud.label(hud.screen, "BUILD " .. tag, UDim2.fromOffset(240, 26), UDim2.fromOffset(16, 62))

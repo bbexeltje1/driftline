@@ -11,3 +11,5 @@ Thumbs.db
 src/ReplicatedStorage/Shared/BuildTag.luau
 # Committed sample places used by the layout checks.
 !tests/fixtures/*.rbxlx
+# Pinned Rojo downloaded by scripts/build.ps1 when Rojo is not installed.
+.tools/

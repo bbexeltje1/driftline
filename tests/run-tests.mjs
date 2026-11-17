@@ -142,6 +142,8 @@ try {
   //    reason when nobody has built yet (a fresh copy has no build/ folder), and force argv[2]
   //    to a plain path: scripts invoked from tests otherwise receive the file URL, which
   //    arrives percent-encoded and breaks in any folder whose name contains a space.
+  // Rojo-rule guard on default.project.json runs on every test pass, build or not.
+  execFileSync(process.execPath, [path.join(testRoot, "project-check.mjs")], { stdio: "inherit" });
   const placeFile = process.argv[2] || path.join(root, "build", "game.rbxlx");
   if (!existsSync(placeFile)) {
     console.log(`FAIL Place file: ${placeFile} is missing. Run .\\scripts\\play.ps1 (or rojo build) first.`);

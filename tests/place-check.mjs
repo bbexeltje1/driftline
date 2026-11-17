@@ -103,6 +103,23 @@ if (scripts) {
   }
 }
 
+// M1 systems: a real build (not the committed layout fixtures) must contain every
+// implemented system, so a launch can never "work" with a silently dropped module.
+if (!file.includes("fixtures")) {
+  const serverModules = ["CourseService", "ProfileService", "MovementValidator", "RewardService", "RunService"];
+  for (const name of serverModules) expect("ServerScriptService/Modules", name, "ModuleScript");
+  expect("ServerScriptService", "Main", "Script");
+  const shared = ["Config", "Physics", "Landing", "TrickCatalog", "TrickScorer", "BoardCatalog", "RunRules", "NetworkContracts", "Profile", "BuildTag"];
+  for (const name of shared) expect("ReplicatedStorage/Shared", name, "ModuleScript");
+  const client = ["Hud", "HudPresenter", "InputMapper", "BoardController", "AnimationController", "CameraController"];
+  for (const name of client) expect("ReplicatedStorage/ClientModules", name, "ModuleScript");
+  const course = ["StartPad", "Checkpoint", "Gates", "FinishPad", "Hazards"];
+  for (const name of course) {
+    const wsCourse = child(child(tree, "Workspace") ?? { children: [] }, "Course");
+    if (!wsCourse || !child(wsCourse, name)) failures.push(`missing Workspace/Course/${name} in the built place (course greybox)`);
+  }
+}
+
 if (failures.length > 0) {
   console.error("Place check failed:");
   for (const failure of failures) console.error(`  - ${failure}`);
