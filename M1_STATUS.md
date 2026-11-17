@@ -34,3 +34,12 @@ Branch: `arena/373194be-driftline`. Build label `m1.0.0`.
 - **Real `rojo build` was NOT executed in this sandbox.** `release-assets.githubusercontent.com` is unreachable (TLS reset, curl 35, both web and API asset routes). Verification of the real Rojo 7.7.1 build is delegated to CI (`.github/workflows/checks.yml`), read via `gh run`; result recorded below.
 - **Roblox Studio open + Play: NOT RUN.** No Studio here. Status BLOCKED, not PASS.
 - Course is Rojo-built greybox (from `default.project.json`), not a Studio-authored versioned artifact. Integrating a Studio-authored course is still pending.
+
+## Rojo build — verified by CI (real Rojo 7.7.1)
+- Commit `984edf1`, workflow run `44188070642` on `arena/373194be-driftline`: **success**.
+- Steps passed: Install Rojo (pinned 7.7.1 Linux), Stamp build, **Build the place** (`rojo build default.project.json --output build/game.rbxlx`, exit 0), **Run checks** (`npm test`, including the Rojo project guard and place-check on the Rojo-built file), Parse Windows scripts, **Check the built place** (place-check: M1 server/shared/client modules and Workspace.Course present).
+- Two real causes fixed on the way:
+  1. Schema: geometry properties sat outside `$properties` (Rojo reads them as children). Verified every class/property/enum name in `default.project.json` against Roblox's API dump (0 problems).
+  2. CI had no `build/` folder, and Rojo's output `File::create` does not create parent directories. Now `mkdir -p build` in CI.
+- Windows: `rojo-7.7.1-windows-x86_64.zip` is the same Rojo version, but was NOT executed on a Windows machine. `.\scripts\play.ps1` was NOT executed (no PowerShell or Windows host here).
+- Studio open and Play: NOT RUN (no Studio here). Status BLOCKED, not PASS.
