@@ -67,8 +67,8 @@ function propsXml(name, node, source) {
         `<ZX>${num(m[6])}</ZX><ZY>${num(m[7])}</ZY><ZZ>${num(m[8])}</ZZ></CoordinateFrame>`
     );
   }
-  if (Array.isArray(node.Color3)) {
-    parts.push(`<Color3 name="Color3"><R>${num(node.Color3[0])}</R><G>${num(node.Color3[1])}</G><B>${num(node.Color3[2])}</B></Color3>`);
+  if (Array.isArray(node.Color)) {
+    parts.push(`<Color3 name="Color"><R>${num(node.Color[0])}</R><G>${num(node.Color[1])}</G><B>${num(node.Color[2])}</B></Color3>`);
   }
   if (typeof node.Material === "string" && MATERIAL_IDS[node.Material] !== undefined) {
     parts.push(`<token name="Material">${MATERIAL_IDS[node.Material]}</token>`);
@@ -111,7 +111,7 @@ async function buildNode(name, node) {
     const dirAbs = path.join(root, node.$path);
     const children = await buildPathNode(dirAbs);
     const cls = node.$className || "Folder";
-    return `<Item class="${cls}" referent="${nextRef()}">${propsXml(name, node)}${children.join("")}</Item>`;
+    return `<Item class="${cls}" referent="${nextRef()}">${propsXml(name, node.$properties || {})}${children.join("")}</Item>`;
   }
   const cls = node.$className || "Folder";
   const children = [];
@@ -121,7 +121,7 @@ async function buildNode(name, node) {
     if (typeof value !== "object" || value === null || Array.isArray(value)) continue;
     children.push(await buildNode(key, value));
   }
-  return `<Item class="${cls}" referent="${nextRef()}">${propsXml(name, node)}${children.join("")}</Item>`;
+  return `<Item class="${cls}" referent="${nextRef()}">${propsXml(name, node.$properties || {})}${children.join("")}</Item>`;
 }
 
 const project = JSON.parse(await fs.readFile(projectPath, "utf8"));

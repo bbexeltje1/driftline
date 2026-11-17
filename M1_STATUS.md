@@ -20,7 +20,8 @@ Branch: `arena/373194be-driftline`. Build label `m1.0.0`.
 ## Launcher (`.\scripts\play.ps1`) — status
 - `play.ps1`: pulls the current branch only (`git pull --ff-only origin <branch>`, never main), runs `build.ps1`, then opens `build\game.rbxlx` in Studio. Press Play; no publishing or API settings.
 - `build.ps1`: uses `rojo` from PATH, or downloads the pinned `rojo-7.7.1-windows-x86_64.zip` into `.tools/` (git-ignored, TLS 1.2 forced for Windows PowerShell 5.1). Stamps `BuildTag`, runs `rojo build`, then `tests/place-check.mjs`, which now also requires every M1 server/shared/client module and the Workspace.Course greybox.
-- **Fixed real Rojo build blocker:** 25 `CFrame` entries in `default.project.json` used a 6-number Euler form. Rojo 7.7.1 (`src/resolution.rs`, `AmbiguousValue::resolve`) accepts only 12-number CFrames, so the real `rojo build` would have failed while the fallback builder passed. Converted to position + 3x3 matrix (same Ry·Rx·Rz geometry). Guarded by `tests/project-check.mjs` (run by `npm test`); the old form fails it.
+- **Correction (Rojo schema):** the previous fix was incomplete. Rojo 7.7.1 (`src/project.rs`) reads only `$`-keys and child instances; instance properties must be inside `$properties`. All 25 geometry instances (22 Part, 2 WedgePart, 1 SpawnLocation) had Size/CFrame/Color3/Material/Anchored/CanCollide/Transparency/Neutral beside `$className`, so Rojo would treat them as children and fail. Moved every property into `$properties`, renamed `Color3` to `Color`; 36 instances verified identical before/after. `tests/project-check.mjs` now enforces this (pre-fix file fails).
+- **Earlier fix (also kept):** 25 `CFrame` entries in `default.project.json` used a 6-number Euler form. Rojo 7.7.1 (`src/resolution.rs`, `AmbiguousValue::resolve`) accepts only 12-number CFrames, so the real `rojo build` would have failed while the fallback builder passed. Converted to position + 3x3 matrix (same Ry·Rx·Rz geometry). Guarded by `tests/project-check.mjs` (run by `npm test`); the old form fails it.
 - **Fixed untimed waits** in `Main.client.luau` (HUD, client module requires, PlayerGui); all bounded at 10s, with a visible error if `ClientModules` is missing.
 
 ### Verified in this sandbox
@@ -30,6 +31,6 @@ Branch: `arena/373194be-driftline`. Build label `m1.0.0`.
 
 ### NOT verified in this sandbox (blockers)
 - **`.\scripts\play.ps1` was not executed.** No PowerShell (`pwsh`) and no Windows host. Only ASCII/CRLF/no-BOM syntax was checked by inspection.
-- **Real `rojo build` was not executed.** GitHub release downloads fail TLS from this sandbox (`curl` exit 35). CI pins Rojo 7.7.1 and runs it on push.
+- **Real `rojo build` was NOT executed in this sandbox.** `release-assets.githubusercontent.com` is unreachable (TLS reset, curl 35, both web and API asset routes). Verification of the real Rojo 7.7.1 build is delegated to CI (`.github/workflows/checks.yml`), read via `gh run`; result recorded below.
 - **Roblox Studio open + Play: NOT RUN.** No Studio here. Status BLOCKED, not PASS.
 - Course is Rojo-built greybox (from `default.project.json`), not a Studio-authored versioned artifact. Integrating a Studio-authored course is still pending.

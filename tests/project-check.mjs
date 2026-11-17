@@ -1,46 +1,92 @@
-// Static guard for default.project.json, following Rojo 7.7.1's rules (resolution.rs):
-// CFrame must be a 12-number array, Color3/Vector3 3-number arrays, Material an enum name.
-// The fallback place builder accepts looser input, so this is what catches a Rojo build failure.
+// Static guard for default.project.json against the Rojo 7.7.1 schema (src/project.rs):
+//   - an Instance Description may contain only $-keys plus child instances;
+//   - every instance property must live inside "$properties";
+//   - property values follow Rojo's resolution rules (src/resolution.rs):
+//     CFrame = 12 numbers, Size/Color/Position = 3 numbers, Material = enum name, etc.
+// The fallback place builder accepts looser input, so it cannot prove compatibility.
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const project = JSON.parse(await fs.readFile(path.join(root, "default.project.json"), "utf8"));
+const projectFile = process.argv[2] || path.join(root, "default.project.json");
+const project = JSON.parse(await fs.readFile(projectFile, "utf8"));
 const failures = [];
-const enumNames = new Set(["Plastic", "SmoothPlastic", "Neon", "Slate", "Concrete", "Metal", "Wood", "Glass", "ForceField", "Grass", "Ice", "Brick", "Granite", "Marble", "Cobblestone", "Sand", "Fabric", "Foil", "Rock", "Pebble", "Basalt", "Asphalt", "Limestone", "Pavement", "Corroded", "CrackedLava", "DiamondPlate", "Glacier", "Mud", "Ground", "Salt", "WoodPlanks", "Rubber", "LeafyGrass", "Sandstone", "Snow", "Air"]);
-const vectorKeys = { Size: 3, Color3: 3, Position: 3 };
 
-async function walk(node, where) {
-  if (Array.isArray(node) || node === null || typeof node !== "object") return;
-  for (const [key, value] of Object.entries(node)) {
-    const here = `${where}/${key}`;
-    if (key === "CFrame") {
+const knownDollarKeys = new Set(["$className", "$path", "$properties", "$attributes", "$ignoreUnknownInstances", "$id", "$schema"]);
+const topLevelKeys = new Set(["$schema", "name", "tree", "emitLegacyScripts", "servePort", "servePlaceIds", "placeId", "gameId", "globIgnorePaths", "glob"]);
+const knownMaterials = new Set(["Plastic", "SmoothPlastic", "Neon", "Slate", "Concrete", "Metal", "Wood", "WoodPlanks", "Glass", "ForceField", "Grass", "LeafyGrass", "Ice", "Brick", "Granite", "Marble", "Cobblestone", "Sand", "Sandstone", "Fabric", "Foil", "Rock", "Pebble", "Basalt", "Asphalt", "Limestone", "Pavement", "Corroded", "CrackedLava", "DiamondPlate", "Glacier", "Mud", "Ground", "Salt", "Rubber", "Snow", "Air"]);
+const vectorProps = { Size: 3, Color: 3, Position: 3, Orientation: 3 };
+const boolProps = new Set(["Anchored", "CanCollide", "CanQuery", "CanTouch", "Neutral", "Locked"]);
+const numberProps = new Set(["Transparency", "Reflectance"]);
+
+function isObject(v) {
+  return v !== null && typeof v === "object" && !Array.isArray(v);
+}
+
+function checkProperties(where, props) {
+  for (const [name, value] of Object.entries(props)) {
+    const here = `${where}.$properties.${name}`;
+    if (name === "Color3") {
+      failures.push(`${here}: Roblox property is named "Color" (BasePart), not "Color3"`);
+    } else if (name === "CFrame") {
       if (!Array.isArray(value) || value.length !== 12 || value.some((n) => typeof n !== "number")) {
-        failures.push(`${here}: CFrame must be 12 numbers (position + 3x3 matrix), got ${JSON.stringify(value)}`);
+        failures.push(`${here}: CFrame must be 12 numbers (position + 3x3 matrix)`);
       }
-    } else if (key in vectorKeys) {
-      if (!Array.isArray(value) || value.length !== vectorKeys[key] || value.some((n) => typeof n !== "number")) {
-        failures.push(`${here}: ${key} must be ${vectorKeys[key]} numbers`);
+    } else if (name in vectorProps) {
+      if (!Array.isArray(value) || value.length !== vectorProps[name] || value.some((n) => typeof n !== "number")) {
+        failures.push(`${here}: ${name} must be ${vectorProps[name]} numbers`);
       }
-    } else if (key === "Material" && !enumNames.has(value)) {
-      failures.push(`${here}: unknown Material "${value}"`);
-    } else if (key === "$path") {
-      try {
-        const stat = await fs.stat(path.join(root, value));
-        if (!stat.isDirectory() && !stat.isFile()) throw new Error("not a file or folder");
-      } catch {
-        failures.push(`${here}: path "${value}" does not exist`);
-      }
+    } else if (name === "Material") {
+      if (!knownMaterials.has(value)) failures.push(`${here}: unknown Material "${value}"`);
+    } else if (boolProps.has(name)) {
+      if (typeof value !== "boolean") failures.push(`${here}: ${name} must be true or false`);
+    } else if (numberProps.has(name)) {
+      if (typeof value !== "number") failures.push(`${here}: ${name} must be a number`);
     }
-    await walk(value, here);
   }
 }
 
-await walk(project.tree, "#/tree");
+async function walk(node, where) {
+  if (!isObject(node)) return;
+  for (const key of Object.keys(node)) {
+    if (key.startsWith("$") && !knownDollarKeys.has(key)) {
+      failures.push(`${where}: unknown Rojo key "${key}"`);
+    }
+  }
+  if ("$className" in node) {
+    // Instance Description: every non-$ key is either a child instance (object) or a property.
+    for (const [key, value] of Object.entries(node)) {
+      if (key.startsWith("$") || isObject(value)) continue;
+      failures.push(`${where}/${key}: property "${key}" sits outside "$properties". Rojo reads it as a child instance; move it into "$properties".`);
+    }
+    if (node.$properties !== undefined) {
+      if (!isObject(node.$properties)) failures.push(`${where}.$properties must be an object`);
+      else checkProperties(where, node.$properties);
+    }
+  }
+  if (node.$path !== undefined) {
+    try {
+      await fs.stat(path.join(root, node.$path));
+    } catch {
+      failures.push(`${where}: $path "${node.$path}" does not exist`);
+    }
+  }
+  for (const [key, value] of Object.entries(node)) {
+    if (key.startsWith("$")) continue;
+    if (isObject(value)) await walk(value, `${where}/${key}`);
+  }
+}
+
+for (const key of Object.keys(project)) {
+  if (!topLevelKeys.has(key)) failures.push(`top-level key "${key}" is not a Rojo project key`);
+}
+await walk(project.tree, "#tree");
+
 if (failures.length > 0) {
-  console.error("Project check failed (Rojo would reject default.project.json):");
+  console.error(`Project check failed (Rojo 7.7.1 would reject ${path.relative(root, projectFile)}):`);
   for (const failure of failures) console.error(`  - ${failure}`);
   process.exit(1);
 }
-console.log("PASS Rojo project: CFrame/vector shapes, enum names and $path folders valid");
+const count = JSON.stringify(project.tree).split('"$properties"').length - 1;
+console.log(`PASS Rojo project schema: properties in $properties, Rojo value shapes, $path folders valid (${count} instances with $properties)`);
