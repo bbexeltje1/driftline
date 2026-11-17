@@ -42,7 +42,10 @@ jobs:
 
       # Build before testing: one of the checks inspects the finished place file.
       - name: Build the place
-        run: rojo build default.project.json --output build/game.rbxlx
+        # Rojo does not create the output folder (File::create fails on a missing directory).
+        run: |
+          mkdir -p build
+          rojo build default.project.json --output build/game.rbxlx
 
       - name: Run checks
         run: npm test
